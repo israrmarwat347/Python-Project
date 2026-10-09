@@ -1,3 +1,9 @@
+<!-- Original Python-Project README preserved below -->
+
+# Python-Project
+
+---
+
 # DevOps Notes App — Hands-on Practice Project
 
 A tiny Python/FastAPI notes app, used as a canvas to practice the full DevOps stack:
