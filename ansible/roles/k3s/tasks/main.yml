@@ -1,0 +1,37 @@
+---
+- name: Install k3s (single-node, write kubeconfig world-readable)
+  shell: |
+    curl -sfL https://get.k3s.io | \
+      INSTALL_K3S_EXEC="--write-kubeconfig-mode=644 --disable traefik" \
+      sh -
+  args:
+    creates: /usr/local/bin/k3s
+
+- name: Wait for kubeconfig to appear
+  wait_for:
+    path: /etc/rancher/k3s/k3s.yaml
+    timeout: 60
+
+- name: Install kubectl symlink
+  file:
+    src: /usr/local/bin/k3s
+    dest: /usr/local/bin/kubectl
+    state: link
+    force: yes
+
+- name: Create ubuntu .kube dir
+  file:
+    path: /home/ubuntu/.kube
+    state: directory
+    owner: ubuntu
+    group: ubuntu
+    mode: '0755'
+
+- name: Copy kubeconfig for ubuntu user
+  copy:
+    src: /etc/rancher/k3s/k3s.yaml
+    dest: /home/ubuntu/.kube/config
+    remote_src: yes
+    owner: ubuntu
+    group: ubuntu
+    mode: '0600'

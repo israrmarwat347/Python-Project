@@ -1,0 +1,22 @@
+---
+- name: Base hardening on all nodes
+  hosts: all
+  become: true
+  roles:
+    - common
+    - ssh_hardening
+
+- name: Configure Jenkins host
+  hosts: jenkins
+  become: true
+  roles:
+    - docker
+    - jenkins
+
+- name: Configure Kubernetes node
+  hosts: k8s
+  become: true
+  roles:
+    - docker
+    - k3s
+    - helm

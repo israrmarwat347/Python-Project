@@ -1,0 +1,31 @@
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+name: devops-notes
+nodes:
+  - role: control-plane
+    extraPortMappings:
+      # notes-app NodePort -> host
+      - containerPort: 30080
+        hostPort: 30080
+        protocol: TCP
+      # Grafana NodePort -> host
+      - containerPort: 30030
+        hostPort: 30030
+        protocol: TCP
+      # Prometheus NodePort -> host
+      - containerPort: 30090
+        hostPort: 30090
+        protocol: TCP
+      # Jenkins NodePort -> host
+      - containerPort: 30808
+        hostPort: 8080
+        protocol: TCP
+      # MinIO console -> host
+      - containerPort: 30901
+        hostPort: 9001
+        protocol: TCP
+      # MinIO API (S3) -> host
+      - containerPort: 30900
+        hostPort: 9000
+        protocol: TCP
+  - role: worker

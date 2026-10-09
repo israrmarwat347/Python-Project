@@ -1,0 +1,8 @@
+[jenkins]
+jenkins ansible_host=JENKINS_PUBLIC_IP ansible_user=ubuntu ansible_ssh_private_key_file=~/.ssh/devops-notes.pem
+
+[k8s]
+k8s ansible_host=K8S_PUBLIC_IP ansible_user=ubuntu ansible_ssh_private_key_file=~/.ssh/devops-notes.pem
+
+[all:vars]
+ansible_python_interpreter=/usr/bin/python3

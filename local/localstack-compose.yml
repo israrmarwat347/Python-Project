@@ -1,0 +1,16 @@
+# LocalStack = AWS emulator. Lets you practice Terraform `apply`/`destroy`
+# against VPC/EC2/S3 for free. Run:  docker compose -f local/localstack-compose.yml up -d
+version: "3.9"
+services:
+  localstack:
+    image: localstack/localstack:3.8
+    ports:
+      - "4566:4566"           # single edge port for all AWS services
+    environment:
+      SERVICES: s3,ec2,iam
+      DEFAULT_REGION: us-east-1
+      DEBUG: "0"
+    volumes:
+      - localstack_data:/var/lib/localstack
+volumes:
+  localstack_data: {}

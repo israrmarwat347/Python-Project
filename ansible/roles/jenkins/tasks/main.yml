@@ -1,0 +1,53 @@
+---
+- name: Install OpenJDK 17
+  apt:
+    name: openjdk-17-jre
+    state: present
+
+- name: Add Jenkins apt key
+  get_url:
+    url: https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key
+    dest: /usr/share/keyrings/jenkins-keyring.asc
+    mode: '0644'
+
+- name: Add Jenkins apt repository
+  apt_repository:
+    repo: "deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian-stable binary/"
+    state: present
+    filename: jenkins
+
+- name: Install Jenkins
+  apt:
+    name: jenkins
+    state: present
+    update_cache: yes
+
+- name: Ensure Jenkins is running
+  service:
+    name: jenkins
+    state: started
+    enabled: yes
+
+- name: Install kubectl (for Jenkins to deploy to k3s)
+  shell: |
+    curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+    install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+    rm -f kubectl
+  args:
+    creates: /usr/local/bin/kubectl
+
+- name: Install AWS CLI v2
+  shell: |
+    curl -sLo awscliv2.zip "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip"
+    unzip -q awscliv2.zip
+    ./aws/install
+    rm -rf aws awscliv2.zip
+  args:
+    creates: /usr/local/bin/aws
+
+- name: Add jenkins user to docker group
+  user:
+    name: jenkins
+    groups: docker
+    append: yes
+  notify: Restart jenkins

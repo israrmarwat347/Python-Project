@@ -1,0 +1,64 @@
+# Lean values for kube-prometheus-stack on a single small node (t3.medium).
+# Install:
+#   helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+#   helm repo update
+#   kubectl create namespace monitoring
+#   kubectl -n monitoring apply -f monitoring/grafana-admin-secret.yaml
+#   helm upgrade --install kps prometheus-community/kube-prometheus-stack \
+#        -n monitoring -f monitoring/values.yaml
+
+fullnameOverride: kps
+
+alertmanager:
+  enabled: true
+  alertmanagerSpec:
+    resources:
+      requests: { cpu: 20m, memory: 64Mi }
+      limits:   { cpu: 200m, memory: 128Mi }
+
+prometheus:
+  prometheusSpec:
+    retention: 2d
+    resources:
+      requests: { cpu: 100m, memory: 400Mi }
+      limits:   { cpu: 500m, memory: 900Mi }
+    # Pick up ServiceMonitors from ALL namespaces (so our app's SM is found).
+    serviceMonitorSelectorNilUsesHelmValues: false
+    ruleSelectorNilUsesHelmValues: false
+    podMonitorSelectorNilUsesHelmValues: false
+  service:
+    type: NodePort
+    nodePort: 30090
+
+grafana:
+  # Password comes from the Kubernetes Secret `grafana-admin` (see grafana-admin-secret.yaml.example).
+  admin:
+    existingSecret: grafana-admin
+    userKey: admin-user
+    passwordKey: admin-password
+  service:
+    type: NodePort
+    nodePort: 30030
+  resources:
+    requests: { cpu: 50m, memory: 128Mi }
+    limits:   { cpu: 300m, memory: 256Mi }
+  sidecar:
+    dashboards:
+      enabled: true
+      searchNamespace: ALL
+      label: grafana_dashboard
+      labelValue: "1"
+    datasources:
+      enabled: true
+  defaultDashboardsEnabled: true
+
+kubeStateMetrics:
+  enabled: true
+nodeExporter:
+  enabled: true
+
+# Trim things we don't need on a single-node cluster
+kubeEtcd: { enabled: false }
+kubeControllerManager: { enabled: false }
+kubeScheduler: { enabled: false }
+kubeProxy: { enabled: false }

@@ -1,0 +1,17 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: notes-app
+  namespace: monitoring
+  labels:
+    release: kps          # must match kube-prometheus-stack release name
+spec:
+  namespaceSelector:
+    matchNames: ["notes"]
+  selector:
+    matchLabels:
+      app: notes-app
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: 15s

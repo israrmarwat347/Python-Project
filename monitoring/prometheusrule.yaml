@@ -1,0 +1,41 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: notes-app-rules
+  namespace: monitoring
+  labels:
+    release: kps
+spec:
+  groups:
+    - name: notes-app.rules
+      interval: 30s
+      rules:
+        - alert: AppDown
+          expr: up{job="notes-app"} == 0
+          for: 1m
+          labels: { severity: critical }
+          annotations:
+            summary: "Notes app is DOWN"
+            description: "No Prometheus targets are up for the notes-app for >1m."
+
+        - alert: HighErrorRate
+          expr: |
+            sum(rate(notes_app_requests_total{http_status=~"5.."}[5m]))
+              /
+            sum(rate(notes_app_requests_total[5m])) > 0.05
+          for: 2m
+          labels: { severity: warning }
+          annotations:
+            summary: "Notes app error rate > 5%"
+            description: "More than 5% of requests are failing over the last 5 minutes."
+
+        - alert: HighMemoryUsage
+          expr: |
+            sum by (pod) (container_memory_working_set_bytes{namespace="notes", pod=~"notes-app.*"})
+              /
+            sum by (pod) (kube_pod_container_resource_limits{namespace="notes", pod=~"notes-app.*", resource="memory"}) > 0.85
+          for: 5m
+          labels: { severity: warning }
+          annotations:
+            summary: "Notes app pod memory > 85% of limit"
+            description: "Pod {{ $labels.pod }} is using more than 85% of its memory limit."
